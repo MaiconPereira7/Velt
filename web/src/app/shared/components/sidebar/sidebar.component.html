@@ -1,0 +1,34 @@
+<aside class="sidebar">
+  <div class="sidebar__logo">
+    <span class="logo-icon">₿</span>
+    <span class="logo-text">Velt</span>
+  </div>
+
+  <nav class="sidebar__nav">
+    @for (item of navItems; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="nav-item--active"
+        class="nav-item"
+      >
+        <span class="nav-item__bar"></span>
+        <span class="nav-item__icon" [innerHTML]="item.icon"></span>
+        <span class="nav-item__label">{{ item.label }}</span>
+        @if (item.badge) {
+          <span class="nav-item__badge">{{ item.badge }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar__bottom">
+    <div class="user-badge">
+      <div class="user-badge__avatar">{{ initials }}</div>
+      <div class="user-badge__info">
+        <div class="user-badge__name">{{ firstName }}</div>
+        <div class="user-badge__role">Investidor</div>
+      </div>
+      <button class="user-badge__logout" (click)="logout()" title="Sair">⏻</button>
+    </div>
+  </div>
+</aside>

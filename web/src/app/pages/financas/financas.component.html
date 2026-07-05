@@ -1,0 +1,142 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Finanças Pessoais</h1>
+      <p class="page-subtitle">Controle de entradas e saídas • Maio 2025</p>
+    </div>
+    <button class="btn btn--primary" (click)="showForm.set(!showForm())">+ Nova Transação</button>
+  </div>
+
+  <!-- Resumo -->
+  <div class="grid grid--3">
+    <div class="card card--income">
+      <div class="card__label">Receitas</div>
+      <div class="metric positive">R$ {{ finance.totalIncome() | brl }}</div>
+    </div>
+    <div class="card card--expense">
+      <div class="card__label">Despesas</div>
+      <div class="metric negative">R$ {{ finance.totalExpense() | brl }}</div>
+    </div>
+    <div class="card card--balance">
+      <div class="card__label">Saldo</div>
+      <div class="metric" [class.positive]="finance.balance() >= 0" [class.negative]="finance.balance() < 0">
+        R$ {{ finance.balance() | brl }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário -->
+  @if (showForm()) {
+    <div class="card card--form">
+      <div class="card__label">Nova Transação</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-input" [(ngModel)]="form.type">
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <input class="form-input" placeholder="ex: Alimentação" [(ngModel)]="form.category" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <input class="form-input" placeholder="ex: Supermercado" [(ngModel)]="form.description" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input class="form-input" type="number" placeholder="0.00" [(ngModel)]="form.amount" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input class="form-input" type="date" [(ngModel)]="form.date" />
+        </div>
+      </div>
+      @if (formError()) {
+        <div class="form-error">{{ formError() }}</div>
+      }
+      <div class="form-actions">
+        <button class="btn btn--primary" (click)="addTransaction()">Salvar</button>
+        <button class="btn btn--secondary" (click)="showForm.set(false)">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="grid grid--2">
+    <!-- Tabela de transações -->
+    <div class="card">
+      <div class="table-header">
+        <div class="card__label" style="margin-bottom:0">Transações</div>
+        <div class="filter-tabs">
+          <button class="filter-tab" [class.filter-tab--active]="filter() === 'todas'" (click)="setFilter('todas')">Todas</button>
+          <button class="filter-tab" [class.filter-tab--active]="filter() === 'entrada'" (click)="setFilter('entrada')">Entradas</button>
+          <button class="filter-tab" [class.filter-tab--active]="filter() === 'saida'" (click)="setFilter('saida')">Saídas</button>
+        </div>
+      </div>
+
+      @if (finance.transactionsLoading()) {
+        <div class="skeleton" style="margin-top:16px"></div>
+      } @else if (finance.transactionsError()) {
+        <div class="form-error" style="margin-top:16px">{{ finance.transactionsError() }}</div>
+      } @else if (filtered.length === 0) {
+        <div class="empty-state" style="margin-top:16px">Nenhuma transação encontrada.</div>
+      } @else {
+        <table class="table" style="margin-top:16px">
+          <thead>
+            <tr>
+              <th class="table__th">Data</th>
+              <th class="table__th">Descrição</th>
+              <th class="table__th">Categoria</th>
+              <th class="table__th table__th--right">Valor</th>
+              <th class="table__th"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of filtered; track tx.id) {
+              <tr>
+                <td class="table__td table__td--date">{{ tx.date }}</td>
+                <td class="table__td">{{ tx.description }}</td>
+                <td class="table__td">
+                  <span class="cat-badge">{{ tx.category }}</span>
+                </td>
+                <td class="table__td table__td--right table__td--mono"
+                    [class.positive]="tx.type === 'entrada'"
+                    [class.negative]="tx.type === 'saida'">
+                  {{ tx.type === 'entrada' ? '+' : '-' }}R$ {{ tx.amount | brl }}
+                </td>
+                <td class="table__td">
+                  <button class="btn-remove" (click)="removeTransaction(tx.id)">✕</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Gastos por categoria -->
+    <div class="card">
+      <div class="card__label">Gastos por Categoria</div>
+      <div class="cat-list">
+        @for (cat of finance.expenseByCategory(); track cat[0]) {
+          <div class="cat-item">
+            <div class="cat-item__top">
+              <span class="cat-item__name">{{ cat[0] }}</span>
+              <span class="cat-item__val negative">R$ {{ cat[1] | brl }}</span>
+            </div>
+            <div class="cat-item__track">
+              <div class="cat-item__fill" [style.width.%]="catBarPct(cat[1])"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="savings-rate">
+        Taxa de poupança:
+        <strong class="positive">{{ finance.savingsRate() | number:'1.1-1' }}%</strong>
+      </div>
+    </div>
+  </div>
+</div>

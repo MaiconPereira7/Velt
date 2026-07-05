@@ -1,0 +1,157 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Carteira de Ativos</h1>
+      <p class="page-subtitle">Gerencie suas criptomoedas e acompanhe o desempenho</p>
+    </div>
+    <button class="btn btn--primary" (click)="showForm.set(!showForm())">+ Adicionar Ativo</button>
+  </div>
+
+  <!-- Resumo -->
+  <div class="grid grid--3">
+    <div class="card">
+      <div class="card__label">Total Investido</div>
+      <div class="metric">R$ {{ crypto.totalInvested | brl }}</div>
+    </div>
+    <div class="card card--btc">
+      <div class="card__label">Valor Atual</div>
+      <div class="metric metric--btc">R$ {{ crypto.totalCurrent | brl }}</div>
+    </div>
+    <div class="card">
+      <div class="card__label">Lucro Total</div>
+      <div class="metric" [class.positive]="crypto.totalCurrent >= crypto.totalInvested" [class.negative]="crypto.totalCurrent < crypto.totalInvested">
+        R$ {{ (crypto.totalCurrent - crypto.totalInvested) | brl }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário de novo ativo -->
+  @if (showForm()) {
+    <div class="card card--form">
+      <div class="card__label">Novo Ativo</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Criptomoeda</label>
+          <select class="form-input" [ngModel]="selectedPreset" (ngModelChange)="selectedPreset = $event; onPresetChange($event)">
+            @for (preset of coinPresets; track preset.symbol) {
+              <option [value]="preset.symbol">{{ preset.coin }} ({{ preset.symbol }})</option>
+            }
+            <option value="custom">Outra (personalizada)</option>
+          </select>
+        </div>
+        @if (customCoin) {
+          <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" placeholder="ex: Polkadot" [(ngModel)]="form.coin" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Símbolo</label>
+            <input class="form-input" placeholder="DOT" [(ngModel)]="form.symbol" />
+          </div>
+        }
+        <div class="form-group">
+          <label class="form-label">Quantidade</label>
+          <input class="form-input" type="number" placeholder="0.00" [(ngModel)]="form.amount" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço Médio Pago (R$)</label>
+          <input class="form-input" type="number" placeholder="0.00" [(ngModel)]="form.avgPrice" />
+        </div>
+      </div>
+      <p class="form-hint">
+        O preço atual é buscado ao vivo na CoinGecko no momento da leitura — não precisa informar.
+      </p>
+      @if (formError()) {
+        <div class="form-error">{{ formError() }}</div>
+      }
+
+      <div class="form-actions">
+        <button class="btn btn--primary" (click)="addAsset()">Salvar Ativo</button>
+        <button class="btn btn--secondary" (click)="showForm.set(false)">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <!-- Tabela -->
+  <div class="card">
+    @if (crypto.assetsLoading()) {
+      <div class="skeleton"></div>
+    } @else if (crypto.assetsError()) {
+      <div class="form-error">{{ crypto.assetsError() }}</div>
+    } @else if (crypto.assets().length === 0) {
+      <div class="empty-state">Nenhum ativo cadastrado ainda. Adicione seu primeiro ativo acima.</div>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="table__th">Ativo</th>
+            <th class="table__th table__th--right">Qtde</th>
+            <th class="table__th table__th--right">Preço Médio</th>
+            <th class="table__th table__th--right">Preço Atual</th>
+            <th class="table__th table__th--right">Investido</th>
+            <th class="table__th table__th--right">Valor Atual</th>
+            <th class="table__th table__th--right">P&L %</th>
+            <th class="table__th table__th--right">P&L R$</th>
+            <th class="table__th"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (asset of crypto.assets(); track asset.id) {
+            <tr>
+              <td class="table__td">
+                <div class="asset-cell">
+                  <span class="asset-cell__icon" [style.color]="asset.color">{{ asset.icon }}</span>
+                  <div>
+                    <div class="asset-cell__name">{{ asset.coin }}</div>
+                    <div class="asset-cell__sym">{{ asset.symbol }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="table__td table__td--right table__td--mono">{{ asset.amount.toFixed(4) }}</td>
+              <td class="table__td table__td--right table__td--mono">R$ {{ asset.avgPrice | brl }}</td>
+              <td class="table__td table__td--right table__td--mono">R$ {{ asset.currentPrice | brl }}</td>
+              <td class="table__td table__td--right table__td--mono">R$ {{ (asset.amount * asset.avgPrice) | brl }}</td>
+              <td class="table__td table__td--right table__td--mono">R$ {{ (asset.amount * asset.currentPrice) | brl }}</td>
+              <td class="table__td table__td--right">
+                <span class="tag" [class.tag--positive]="pnlPct(asset) >= 0" [class.tag--negative]="pnlPct(asset) < 0">
+                  {{ pnlPct(asset) | pct }}
+                </span>
+              </td>
+              <td class="table__td table__td--right table__td--mono"
+                  [class.positive]="pnlReal(asset) >= 0"
+                  [class.negative]="pnlReal(asset) < 0">
+                {{ pnlReal(asset) >= 0 ? '+' : '-' }}R$ {{ (pnlReal(asset) < 0 ? -pnlReal(asset) : pnlReal(asset)) | brl }}
+              </td>
+              <td class="table__td">
+                <button class="btn-remove" (click)="removeAsset(asset.id)">✕</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Barra de distribuição -->
+      <div class="distribution">
+        <div class="distribution__label">Distribuição da Carteira</div>
+        <div class="distribution__bar">
+          @for (asset of crypto.assets(); track asset.id) {
+            <div
+              class="distribution__fill"
+              [style.width.%]="assetPct(asset)"
+              [style.background]="asset.color"
+              [title]="asset.symbol + ': ' + assetPct(asset).toFixed(1) + '%'"
+            ></div>
+          }
+        </div>
+        <div class="distribution__legend">
+          @for (asset of crypto.assets(); track asset.id) {
+            <div class="legend-item">
+              <span class="legend-item__dot" [style.background]="asset.color"></span>
+              <span>{{ asset.symbol }} {{ assetPct(asset).toFixed(1) }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

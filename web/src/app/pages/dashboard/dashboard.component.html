@@ -1,0 +1,153 @@
+<div class="page">
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Visão geral do seu patrimônio • {{ monthLabel }}</p>
+    </div>
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      <span>Ao vivo</span>
+    </div>
+  </div>
+
+  <!-- Hero: patrimônio total em destaque absoluto -->
+  <div class="hero-card">
+    <div class="hero-card__label">Patrimônio Total</div>
+    <div class="hero-card__value" [class.negative]="netWorth < 0">R$ {{ netWorth | brl }}</div>
+    <div class="hero-card__breakdown">
+      <span>₿ Cripto: R$ {{ crypto.totalCurrent | brl }}</span>
+      <span class="hero-card__divider">·</span>
+      <span [class.positive]="finance.balance() >= 0" [class.negative]="finance.balance() < 0">
+        Saldo em conta: R$ {{ finance.balance() | brl }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Métricas secundárias: menor peso visual de propósito, o hero acima é o que importa -->
+  <div class="grid grid--4 grid--secondary">
+    <div class="card">
+      <div class="card__label">Lucro / Prejuízo Cripto</div>
+      <div class="metric metric--sm" [class.positive]="pnl >= 0" [class.negative]="pnl < 0">
+        R$ {{ (pnl < 0 ? -pnl : pnl) | brl }}
+      </div>
+      <div class="metric__sub" [class.positive]="pnl >= 0" [class.negative]="pnl < 0">{{ pnlPct | pct }}</div>
+    </div>
+
+    <div class="card">
+      <div class="card__label">Receita do Mês</div>
+      <div class="metric metric--sm">R$ {{ finance.totalIncome() | brl }}</div>
+      <div class="metric__sub">Entradas em {{ monthLabel }}</div>
+    </div>
+
+    <div class="card">
+      <div class="card__label">Gastos do Mês</div>
+      <div class="metric metric--sm negative">R$ {{ finance.totalExpense() | brl }}</div>
+      <div class="metric__sub">Saídas em {{ monthLabel }}</div>
+    </div>
+
+    <div class="card">
+      <div class="card__label">Ativos Cadastrados</div>
+      <div class="metric metric--sm">{{ crypto.assets().length }}</div>
+      <div class="metric__sub">Na sua carteira</div>
+    </div>
+  </div>
+
+  <!-- BTC + gráfico de aportes -->
+  <div class="grid grid--2">
+    <div class="card card--btc-price">
+      <div class="card__label">₿ Bitcoin · BTC/BRL · Ao vivo</div>
+
+      @if (crypto.priceLoading()) {
+        <div class="skeleton"></div>
+      } @else {
+        <div class="btc-price" [class.btc-price--pulse]="pricePulse">
+          <span class="btc-price__currency">R$</span>
+          <span class="btc-price__value">{{ crypto.btcPrice() | brl: 0 }}</span>
+        </div>
+      }
+
+      <div class="card__footer">
+        Fonte: {{ crypto.isLive() ? 'CoinGecko' : 'Simulado (backend offline)' }} · Atualiza a cada 3s
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__label">Aportes em Cripto (R$)</div>
+      <div class="bar-chart">
+        @for (bar of barData; track bar.label; let last = $last) {
+          <div class="bar-chart__col">
+            <div class="bar-chart__bar" [class.bar-chart__bar--active]="last" [style.height.%]="barPct(bar.v)"></div>
+            <span class="bar-chart__label">{{ bar.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="card__footer">Ilustrativo — histórico mensal real chega numa próxima versão.</div>
+    </div>
+  </div>
+
+  <!-- Tabelas -->
+  <div class="grid grid--2">
+    <div class="card">
+      <div class="card__label">Carteira de Ativos</div>
+      @if (crypto.assetsLoading()) {
+        <div class="skeleton"></div>
+      } @else if (crypto.assets().length === 0) {
+        <div class="empty-state">Nenhum ativo ainda — adicione na Carteira.</div>
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="table__th">Ativo</th>
+              <th class="table__th table__th--right">Saldo</th>
+              <th class="table__th table__th--right">P&L</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (asset of crypto.assets(); track asset.id) {
+              <tr>
+                <td class="table__td">
+                  <div class="asset-name">
+                    <span class="asset-name__icon" [style.color]="asset.color">{{ asset.icon }}</span>
+                    <strong>{{ asset.symbol }}</strong>
+                  </div>
+                </td>
+                <td class="table__td table__td--right table__td--mono">
+                  R$ {{ (asset.amount * asset.currentPrice) | brl }}
+                </td>
+                <td class="table__td table__td--right">
+                  <span class="tag" [class.tag--positive]="asset.currentPrice >= asset.avgPrice" [class.tag--negative]="asset.currentPrice < asset.avgPrice">
+                    {{ ((asset.currentPrice - asset.avgPrice) / asset.avgPrice * 100) | pct }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="card">
+      <div class="card__label">Transações Recentes</div>
+      @if (finance.transactionsLoading()) {
+        <div class="skeleton"></div>
+      } @else if (recentTransactions.length === 0) {
+        <div class="empty-state">Nenhuma transação ainda — adicione em Finanças.</div>
+      } @else {
+        <div class="tx-list">
+          @for (tx of recentTransactions; track tx.id) {
+            <div class="tx-item">
+              <div class="tx-item__info">
+                <span class="tx-item__desc">{{ tx.description }}</span>
+                <span class="tx-item__meta">{{ tx.category }} · {{ tx.date.slice(5) }}</span>
+              </div>
+              <span class="tx-item__amount" [class.positive]="tx.type === 'entrada'" [class.negative]="tx.type === 'saida'">
+                {{ tx.type === 'entrada' ? '+' : '-' }}R$ {{ tx.amount | brl }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

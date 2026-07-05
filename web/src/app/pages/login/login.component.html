@@ -1,0 +1,47 @@
+<div class="login-page">
+  <div class="login-bg"></div>
+
+  <div class="login-card">
+    <div class="login-card__header">
+      <div class="login-card__icon">V</div>
+      <h1 class="login-card__title">Velt</h1>
+      <p class="login-card__subtitle">Sua plataforma de gestão financeira</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input
+          class="form-input"
+          type="email"
+          placeholder="seu@email.com"
+          [(ngModel)]="email"
+          name="email"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input
+          class="form-input"
+          type="password"
+          placeholder="••••••••"
+          [(ngModel)]="password"
+          name="password"
+          autocomplete="current-password"
+        />
+      </div>
+
+      @if (error()) {
+        <div class="form-error">{{ error() }}</div>
+      }
+
+      <button type="submit" class="btn-login" [disabled]="loading()">
+        {{ loading() ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="login-hint">Não tem conta? <a routerLink="/register">Criar conta</a></p>
+  </div>
+</div>

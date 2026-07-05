@@ -1,0 +1,76 @@
+<div class="page insights-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Insights com IA</h1>
+      <p class="page-subtitle">Análises personalizadas baseadas nos seus dados financeiros e de cripto</p>
+    </div>
+    <div class="ai-badge">
+      <span>✦</span> AI
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    @for (action of insights.quickActions; track action) {
+      <button
+        class="quick-btn"
+        [disabled]="insights.loading()"
+        (click)="send(action)"
+      >
+        {{ action }}
+      </button>
+    }
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-container">
+    <div class="chat-messages">
+      @for (msg of insights.messages(); track $index) {
+        <div class="chat-row" [class.chat-row--user]="msg.role === 'user'">
+          @if (msg.role === 'ai') {
+            <div class="chat-avatar">₿</div>
+          }
+          <div
+            class="chat-bubble"
+            [class.chat-bubble--ai]="msg.role === 'ai'"
+            [class.chat-bubble--user]="msg.role === 'user'"
+            [innerHTML]="msg.role === 'ai' ? renderText(msg.text) : msg.text"
+          ></div>
+        </div>
+      }
+
+      <!-- Typing indicator -->
+      @if (insights.loading() && insights.messages()[insights.messages().length - 1]?.role !== 'ai') {
+        <div class="chat-row">
+          <div class="chat-avatar">₿</div>
+          <div class="chat-bubble chat-bubble--ai chat-bubble--typing">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      }
+
+      <div #chatBottom></div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <input
+        class="chat-input"
+        type="text"
+        placeholder="Pergunte sobre sua carteira, gastos, estratégias..."
+        [(ngModel)]="userInput"
+        (keydown)="onKeyDown($event)"
+        [disabled]="insights.loading()"
+      />
+      <button
+        class="btn btn--primary chat-send"
+        (click)="send()"
+        [disabled]="insights.loading() || !userInput.trim()"
+      >
+        Enviar
+      </button>
+    </div>
+  </div>
+</div>
