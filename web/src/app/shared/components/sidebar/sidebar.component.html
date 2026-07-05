@@ -1,4 +1,12 @@
-<aside class="sidebar">
+<button class="sidebar-toggle" (click)="toggle()" [attr.aria-label]="mobileOpen() ? 'Fechar menu' : 'Abrir menu'">
+  {{ mobileOpen() ? '✕' : '☰' }}
+</button>
+
+@if (mobileOpen()) {
+  <div class="sidebar-backdrop" (click)="closeMobile()"></div>
+}
+
+<aside class="sidebar" [class.sidebar--open]="mobileOpen()">
   <div class="sidebar__logo">
     <span class="logo-icon">₿</span>
     <span class="logo-text">Velt</span>
@@ -10,6 +18,7 @@
         [routerLink]="item.path"
         routerLinkActive="nav-item--active"
         class="nav-item"
+        (click)="closeMobile()"
       >
         <span class="nav-item__bar"></span>
         <span class="nav-item__icon" [innerHTML]="item.icon"></span>
@@ -23,7 +32,7 @@
 
   <div class="sidebar__bottom">
     <div class="user-badge">
-      <a routerLink="/perfil" class="user-badge__link" title="Ver perfil">
+      <a routerLink="/perfil" class="user-badge__link" title="Ver perfil" (click)="closeMobile()">
         <div class="user-badge__avatar">{{ initials }}</div>
         <div class="user-badge__info">
           <div class="user-badge__name">{{ firstName }}</div>

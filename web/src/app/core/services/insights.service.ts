@@ -9,7 +9,7 @@ export class InsightsService {
   private http = inject(HttpClient);
 
   private _messages = signal<ChatMessage[]>([
-    { role: 'ai', text: 'Olá! Sou o Velt AI 🤖\n\nEstou conectado aos seus dados financeiros e de criptomoedas de verdade — os números abaixo saem da sua carteira e das suas transações reais, não são fixos.\n\nEscolha uma análise rápida ou faça uma pergunta!' }
+    { role: 'ai', text: 'Olá! Sou o Velt AI 🤖\n\nEstou conectado aos seus dados financeiros e de criptomoedas — clique em uma das análises abaixo para começar!' }
   ]);
   private _loading = signal<boolean>(false);
 

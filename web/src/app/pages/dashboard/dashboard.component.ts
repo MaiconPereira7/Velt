@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CryptoService } from '../../core/services/crypto.service';
 import { FinanceService } from '../../core/services/finance.service';
+import { CryptoAsset } from '../../core/models';
 import { BrlPipe, PctPipe } from '../../shared/pipes/format.pipes';
 
 @Component({
@@ -18,12 +19,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   pricePulse = false;
   private priceInterval: any;
   private lastPrice = 0;
-
-  readonly barData = [
-    { label: 'Jan', v: 3200 }, { label: 'Fev', v: 4100 }, { label: 'Mar', v: 3700 },
-    { label: 'Abr', v: 4800 }, { label: 'Mai', v: 4935 },
-  ];
-  readonly maxBar = Math.max(...this.barData.map(d => d.v));
 
   readonly monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
@@ -53,7 +48,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   get pnl(): number { return this.crypto.totalCurrent - this.crypto.totalInvested; }
   get pnlPct(): number { return this.crypto.totalInvested > 0 ? (this.pnl / this.crypto.totalInvested) * 100 : 0; }
-  get barPct(): (v: number) => number { return (v) => (v / this.maxBar) * 100; }
+
+  // Percentual que um ativo representa do valor atual total da carteira —
+  // mesma lógica usada na página Carteira, aqui alimenta a barra de distribuição do dashboard.
+  assetPct(asset: CryptoAsset): number {
+    return this.crypto.totalCurrent > 0
+      ? (asset.amount * asset.currentPrice / this.crypto.totalCurrent) * 100
+      : 0;
+  }
 
   // 5 transações mais recentes para o card do dashboard
   get recentTransactions() { return this.finance.transactions().slice(0, 5); }

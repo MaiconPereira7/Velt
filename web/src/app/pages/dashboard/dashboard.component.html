@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <!-- BTC + gráfico de aportes -->
+  <!-- BTC + distribuição da carteira -->
   <div class="grid grid--2">
     <div class="card card--btc-price">
       <div class="card__label">₿ Bitcoin · BTC/BRL · Ao vivo</div>
@@ -73,16 +73,31 @@
     </div>
 
     <div class="card">
-      <div class="card__label">Aportes em Cripto (R$)</div>
-      <div class="bar-chart">
-        @for (bar of barData; track bar.label; let last = $last) {
-          <div class="bar-chart__col">
-            <div class="bar-chart__bar" [class.bar-chart__bar--active]="last" [style.height.%]="barPct(bar.v)"></div>
-            <span class="bar-chart__label">{{ bar.label }}</span>
+      <div class="card__label">Distribuição da Carteira</div>
+      @if (crypto.assets().length === 0) {
+        <div class="empty-state">Adicione ativos na Carteira para ver a distribuição.</div>
+      } @else {
+        <div class="distribution">
+          <div class="distribution__bar">
+            @for (asset of crypto.assets(); track asset.id) {
+              <div
+                class="distribution__fill"
+                [style.width.%]="assetPct(asset)"
+                [style.background]="asset.color"
+                [title]="asset.symbol + ': ' + assetPct(asset).toFixed(1) + '%'"
+              ></div>
+            }
           </div>
-        }
-      </div>
-      <div class="card__footer">Ilustrativo — histórico mensal real chega numa próxima versão.</div>
+          <div class="distribution__legend">
+            @for (asset of crypto.assets(); track asset.id) {
+              <div class="legend-item">
+                <span class="legend-item__dot" [style.background]="asset.color"></span>
+                <span>{{ asset.symbol }} {{ assetPct(asset).toFixed(1) }}%</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   </div>
 
@@ -95,6 +110,7 @@
       } @else if (crypto.assets().length === 0) {
         <div class="empty-state">Nenhum ativo ainda — adicione na Carteira.</div>
       } @else {
+        <div class="table-wrap">
         <table class="table">
           <thead>
             <tr>
@@ -124,6 +140,7 @@
             }
           </tbody>
         </table>
+        </div>
       }
     </div>
 

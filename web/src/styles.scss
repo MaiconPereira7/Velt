@@ -157,3 +157,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity
   tbody tr { transition: background 0.15s ease; }
   tbody tr:hover { background: rgba(255,255,255,0.02); }
 }
+
+// Em telas estreitas, tabelas rolam na horizontal em vez de espremer colunas até ficar ilegível.
+@media (max-width: 768px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}

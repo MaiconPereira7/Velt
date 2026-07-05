@@ -21,8 +21,17 @@ export class FinancasComponent implements OnInit {
 
   readonly monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
+  readonly categories = [
+    'Alimentação', 'Transporte', 'Moradia', 'Lazer',
+    'Saúde', 'Educação', 'Salário', 'Freelance',
+    'Investimentos', 'Outros',
+  ];
+
+  selectedCategory = this.categories[0];
+  customCategory = false;
+
   form: Omit<Transaction, 'id'> = {
-    type: 'entrada', category: '', description: '', amount: 0,
+    type: 'entrada', category: this.categories[0], description: '', amount: 0,
     date: new Date().toISOString().slice(0, 10),
   };
 
@@ -35,13 +44,26 @@ export class FinancasComponent implements OnInit {
     return this.finance.transactions().filter(t => f === 'todas' || t.type === f);
   }
 
+  // Mesma lógica do customCoin na Carteira: "Outra" libera um campo de texto livre.
+  onCategoryChange(value: string): void {
+    if (value === 'custom') {
+      this.customCategory = true;
+      this.form.category = '';
+      return;
+    }
+    this.customCategory = false;
+    this.form.category = value;
+  }
+
   async addTransaction(): Promise<void> {
     if (!this.form.description || !this.form.amount) return;
     this.formError.set('');
     try {
       await this.finance.addTransaction({ ...this.form });
       this.showForm.set(false);
-      this.form = { type: 'entrada', category: '', description: '', amount: 0, date: new Date().toISOString().slice(0, 10) };
+      this.customCategory = false;
+      this.selectedCategory = this.categories[0];
+      this.form = { type: 'entrada', category: this.categories[0], description: '', amount: 0, date: new Date().toISOString().slice(0, 10) };
     } catch {
       this.formError.set('Não foi possível salvar a transação. Tente novamente.');
     }

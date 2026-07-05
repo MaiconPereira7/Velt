@@ -96,6 +96,22 @@ npm start
 
 A aplicação sobe em `http://localhost:4200`.
 
+## Dados de exemplo para testar
+
+Após criar sua conta, experimente cadastrar:
+
+**Carteira:**
+- 0.05 BTC a R$ 300.000,00 (preço médio)
+- 2.5 ETH a R$ 14.000,00
+- 500 ADA a R$ 3,50
+- 100 SOL a R$ 800,00
+
+**Finanças:**
+- Entrada: Salário, R$ 8.000,00
+- Saída: Aluguel (Moradia), R$ 2.500,00
+- Saída: Supermercado (Alimentação), R$ 1.200,00
+- Saída: Uber (Transporte), R$ 350,00
+
 ## Verificação de tipos
 
 ```bash

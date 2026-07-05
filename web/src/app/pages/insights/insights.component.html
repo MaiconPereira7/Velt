@@ -53,24 +53,5 @@
 
       <div #chatBottom></div>
     </div>
-
-    <!-- Input -->
-    <div class="chat-input-area">
-      <input
-        class="chat-input"
-        type="text"
-        placeholder="Pergunte sobre sua carteira, gastos, estratégias..."
-        [(ngModel)]="userInput"
-        (keydown)="onKeyDown($event)"
-        [disabled]="insights.loading()"
-      />
-      <button
-        class="btn btn--primary chat-send"
-        (click)="send()"
-        [disabled]="insights.loading() || !userInput.trim()"
-      >
-        Enviar
-      </button>
-    </div>
   </div>
 </div>

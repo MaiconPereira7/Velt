@@ -96,6 +96,22 @@ npm start
 
 The app runs on `http://localhost:4200`.
 
+## Sample data to try out
+
+After creating your account, try adding:
+
+**Wallet:**
+- 0.05 BTC at R$ 300,000.00 (average price)
+- 2.5 ETH at R$ 14,000.00
+- 500 ADA at R$ 3.50
+- 100 SOL at R$ 800.00
+
+**Finances:**
+- Income: Salary, R$ 8,000.00
+- Expense: Rent (Housing), R$ 2,500.00
+- Expense: Groceries (Food), R$ 1,200.00
+- Expense: Uber (Transportation), R$ 350.00
+
 ## Type checking
 
 ```bash

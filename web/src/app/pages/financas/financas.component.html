@@ -39,8 +39,19 @@
         </div>
         <div class="form-group">
           <label class="form-label">Categoria</label>
-          <input class="form-input" placeholder="ex: Alimentação" [(ngModel)]="form.category" />
+          <select class="form-input" [ngModel]="selectedCategory" (ngModelChange)="selectedCategory = $event; onCategoryChange($event)">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+            <option value="custom">Outra (personalizada)</option>
+          </select>
         </div>
+        @if (customCategory) {
+          <div class="form-group">
+            <label class="form-label">Categoria personalizada</label>
+            <input class="form-input" placeholder="ex: Pet" [(ngModel)]="form.category" />
+          </div>
+        }
         <div class="form-group">
           <label class="form-label">Descrição</label>
           <input class="form-input" placeholder="ex: Supermercado" [(ngModel)]="form.description" />
@@ -83,7 +94,8 @@
       } @else if (filtered.length === 0) {
         <div class="empty-state" style="margin-top:16px">Nenhuma transação encontrada.</div>
       } @else {
-        <table class="table" style="margin-top:16px">
+        <div class="table-wrap" style="margin-top:16px">
+        <table class="table">
           <thead>
             <tr>
               <th class="table__th">Data</th>
@@ -113,6 +125,7 @@
             }
           </tbody>
         </table>
+        </div>
       }
     </div>
 
