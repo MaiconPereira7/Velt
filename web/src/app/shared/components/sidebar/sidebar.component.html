@@ -23,11 +23,13 @@
 
   <div class="sidebar__bottom">
     <div class="user-badge">
-      <div class="user-badge__avatar">{{ initials }}</div>
-      <div class="user-badge__info">
-        <div class="user-badge__name">{{ firstName }}</div>
-        <div class="user-badge__role">Investidor</div>
-      </div>
+      <a routerLink="/perfil" class="user-badge__link" title="Ver perfil">
+        <div class="user-badge__avatar">{{ initials }}</div>
+        <div class="user-badge__info">
+          <div class="user-badge__name">{{ firstName }}</div>
+          <div class="user-badge__role">Investidor</div>
+        </div>
+      </a>
       <button class="user-badge__logout" (click)="logout()" title="Sair">⏻</button>
     </div>
   </div>

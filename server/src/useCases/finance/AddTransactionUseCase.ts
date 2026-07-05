@@ -1,5 +1,6 @@
 import { TransactionRepository } from '../../domain/repositories';
 import { TransactionType } from '../../domain/entities';
+import { AppError } from '../../utils/error.middleware';
 
 export interface AddTransactionInput {
   type: TransactionType;
@@ -14,7 +15,7 @@ export class AddTransactionUseCase {
 
   async execute(userId: string, input: AddTransactionInput) {
     if (!input.type || !input.category || !input.amount || !input.date) {
-      throw new Error('Campos obrigatórios: type, category, amount, date.');
+      throw new AppError(400, 'Campos obrigatórios: type, category, amount, date.');
     }
     return this.transactions.create({
       userId,

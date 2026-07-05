@@ -1,4 +1,5 @@
 import { AssetRepository } from '../../domain/repositories';
+import { AppError } from '../../utils/error.middleware';
 
 export interface AddAssetInput {
   coin: string;
@@ -14,7 +15,7 @@ export class AddAssetUseCase {
 
   async execute(userId: string, input: AddAssetInput) {
     if (!input.coin || !input.symbol || !input.amount || !input.avgPrice) {
-      throw new Error('Campos obrigatórios: coin, symbol, amount, avgPrice.');
+      throw new AppError(400, 'Campos obrigatórios: coin, symbol, amount, avgPrice.');
     }
     return this.assets.create({
       userId,

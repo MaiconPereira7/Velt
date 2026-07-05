@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { container } from '../container';
 
-export async function getInsights(req: Request, res: Response) {
+export async function getInsights(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json(await container.getInsights.execute(req.user!.id));
+    res.json(await container.getInsights.execute(req.user!.userId));
   } catch (err) {
-    console.error('[insights.controller] getInsights:', err);
-    res.status(500).json({ error: 'Falha ao gerar insights.' });
+    next(err);
   }
 }

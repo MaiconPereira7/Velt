@@ -125,6 +125,16 @@
 
   &:hover { border-color: rgba(255, 255, 255, 0.14); }
 
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
   &__avatar {
     width: 32px;
     height: 32px;

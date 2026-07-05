@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthResponse, User } from '../models';
 import { API_BASE_URL } from '../config/api.config';
@@ -10,6 +11,7 @@ const USER_KEY = 'velt_user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
+  private router = inject(Router);
 
   // Lê o usuário salvo no localStorage na inicialização — é o que faz a sessão
   // sobreviver a um F5, em vez de deslogar toda vez que a página recarrega.
@@ -37,6 +39,7 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this._user.set(null);
+    this.router.navigateByUrl('/login');
   }
 
   isLoggedIn(): boolean {

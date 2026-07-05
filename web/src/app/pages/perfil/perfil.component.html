@@ -1,0 +1,37 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Meu Perfil</h1>
+      <p class="page-subtitle">Informações da sua conta</p>
+    </div>
+  </div>
+
+  <div class="grid grid--2">
+    <div class="card profile-card">
+      <div class="profile-avatar">{{ initials }}</div>
+      <div class="profile-name">{{ user()?.name }}</div>
+      <div class="profile-email">{{ user()?.email }}</div>
+      <span class="role-badge">Investidor</span>
+
+      <button class="btn btn--secondary profile-logout" (click)="logout()">Sair da conta</button>
+    </div>
+
+    <div class="card">
+      <div class="card__label">Resumo da Conta</div>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <span class="profile-stat__label">Patrimônio Total</span>
+          <span class="profile-stat__value">R$ {{ netWorth | brl }}</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat__label">Ativos cadastrados</span>
+          <span class="profile-stat__value">{{ crypto.assets().length }}</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat__label">Transações registradas</span>
+          <span class="profile-stat__value">{{ finance.transactions().length }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

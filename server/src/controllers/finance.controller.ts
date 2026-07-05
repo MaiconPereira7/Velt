@@ -1,29 +1,27 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { container } from '../container';
 
-export async function listTransactions(req: Request, res: Response) {
+export async function listTransactions(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json(await container.getTransactions.execute(req.user!.id));
+    res.json(await container.getTransactions.execute(req.user!.userId));
   } catch (err) {
-    console.error('[finance.controller] listTransactions:', err);
-    res.status(500).json({ error: 'Falha ao buscar transações.' });
+    next(err);
   }
 }
 
-export async function createTransaction(req: Request, res: Response) {
+export async function createTransaction(req: Request, res: Response, next: NextFunction) {
   try {
-    res.status(201).json(await container.addTransaction.execute(req.user!.id, req.body));
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    res.status(201).json(await container.addTransaction.execute(req.user!.userId, req.body));
+  } catch (err) {
+    next(err);
   }
 }
 
-export async function deleteTransaction(req: Request, res: Response) {
+export async function deleteTransaction(req: Request, res: Response, next: NextFunction) {
   try {
-    await container.removeTransaction.execute(req.user!.id, req.params['id']!);
+    await container.removeTransaction.execute(req.user!.userId, req.params['id']!);
     res.status(204).send();
   } catch (err) {
-    console.error('[finance.controller] deleteTransaction:', err);
-    res.status(500).json({ error: 'Falha ao remover transação.' });
+    next(err);
   }
 }

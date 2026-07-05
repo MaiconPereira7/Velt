@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { authMiddleware } from '../utils/auth.middleware';
 import { listTransactions, createTransaction, deleteTransaction } from '../controllers/finance.controller';
+import { validate } from '../utils/validate';
+import { addTransactionSchema } from '../validators/finance.schema';
 const router = Router();
 router.get('/',       authMiddleware, listTransactions);
-router.post('/',      authMiddleware, createTransaction);
+router.post('/',      authMiddleware, validate(addTransactionSchema), createTransaction);
 router.delete('/:id', authMiddleware, deleteTransaction);
 export default router;

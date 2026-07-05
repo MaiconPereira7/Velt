@@ -38,6 +38,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/insights/insights.component').then(m => m.InsightsComponent),
   },
+  {
+    path: 'perfil',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/perfil/perfil.component').then(m => m.PerfilComponent),
+  },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' },
 ];

@@ -19,6 +19,8 @@ export class FinancasComponent implements OnInit {
   formError = signal('');
   filter = signal<'todas' | 'entrada' | 'saida'>('todas');
 
+  readonly monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
   form: Omit<Transaction, 'id'> = {
     type: 'entrada', category: '', description: '', amount: 0,
     date: new Date().toISOString().slice(0, 10),

@@ -1,18 +1,20 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { container } from '../container';
 
-export async function register(req: Request, res: Response) {
+export async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) { res.status(400).json({ error: 'Campos obrigatórios: name, email, password.' }); return; }
     res.status(201).json(await container.registerUser.execute(name, email, password));
-  } catch (err: any) { res.status(409).json({ error: err.message }); }
+  } catch (err) {
+    next(err);
+  }
 }
 
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
-    if (!email || !password) { res.status(400).json({ error: 'E-mail e senha são obrigatórios.' }); return; }
     res.json(await container.loginUser.execute(email, password));
-  } catch (err: any) { res.status(401).json({ error: err.message }); }
+  } catch (err) {
+    next(err);
+  }
 }
