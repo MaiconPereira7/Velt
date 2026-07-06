@@ -1,3 +1,3 @@
 export const environment = {
-  apiUrl: '/api',
+  apiUrl: 'https://velt-bc7a.onrender.com',
 };
