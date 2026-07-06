@@ -9,7 +9,7 @@ export class InsightsService {
   private http = inject(HttpClient);
 
   private _messages = signal<ChatMessage[]>([
-    { role: 'ai', text: 'Olá! Sou o Velt AI.\n\nEstou conectado aos seus dados financeiros e de criptomoedas — clique em uma das análises abaixo para começar!' }
+    { role: 'ai', text: 'Olá! Sou o Velt AI.\n\nEstou conectado aos seus dados financeiros e de criptomoedas — clique em uma das análises abaixo ou digite sua própria pergunta!' }
   ]);
   private _loading = signal<boolean>(false);
 
@@ -22,15 +22,33 @@ export class InsightsService {
     'Alerta de volatilidade dos meus ativos',
   ];
 
-  // O backend devolve as análises numa ordem fixa (diversificação, gastos,
-  // volatilidade). Mapeamos o botão clicado pra posição correspondente, em vez
-  // de sempre mostrar as 3 — é o que faz a resposta bater com a pergunta feita.
+  // Tenta o chat de IA generativa primeiro (pergunta livre, com contexto
+  // financeiro completo). Se não estiver configurado no servidor (501) ou a
+  // chamada falhar por qualquer motivo, cai pro modo antigo de 3 análises
+  // fixas — nunca deixa o usuário sem resposta nenhuma.
   async sendMessage(text: string): Promise<void> {
     if (!text.trim() || this._loading()) return;
 
     this._messages.update(msgs => [...msgs, { role: 'user', text }]);
     this._loading.set(true);
 
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ answer: string }>(`${API_BASE_URL}/insights/chat`, { question: text }),
+      );
+      this._messages.update(msgs => [...msgs, { role: 'ai', text: res.answer }]);
+    } catch {
+      await this.fallbackToFixedInsights(text);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  // Comportamento original: o backend devolve as análises numa ordem fixa
+  // (diversificação, gastos, volatilidade). Mapeamos o botão clicado pra
+  // posição correspondente, em vez de sempre mostrar as 3 — é o que faz a
+  // resposta bater com a pergunta feita quando o chat de IA não está disponível.
+  private async fallbackToFixedInsights(text: string): Promise<void> {
     try {
       const insights = await firstValueFrom(
         this.http.get<InsightMessage[]>(`${API_BASE_URL}/insights`),
@@ -54,8 +72,6 @@ export class InsightsService {
         role: 'ai',
         text: 'Não consegui gerar a análise agora. Tente novamente em instantes.',
       }]);
-    } finally {
-      this._loading.set(false);
     }
   }
 }

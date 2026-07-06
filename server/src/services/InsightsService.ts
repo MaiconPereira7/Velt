@@ -27,6 +27,17 @@ export interface AiProvider {
 }
 
 /**
+ * Porta separada da AiProvider: chat de pergunta livre não tem equivalente
+ * determinístico (a pergunta é arbitrária), então nem todo AiProvider precisa
+ * implementá-la — só os providers de IA generativa que quiserem oferecer essa
+ * capacidade (hoje: Groq, Gemini). O ChatInsightsUseCase depende só disso,
+ * não de uma classe concreta específica.
+ */
+export interface ChatCapableProvider {
+  chat(question: string, input: InsightsInput): Promise<string>;
+}
+
+/**
  * Gera análises reais a partir dos dados do usuário (nada de texto fixo).
  * É "regra de negócio determinística", não IA generativa — mas responde de
  * verdade à pergunta feita, o que já resolve o problema de a resposta não

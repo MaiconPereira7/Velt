@@ -58,5 +58,26 @@
 
       <div #chatBottom></div>
     </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+      <input
+        type="text"
+        class="chat-input__field"
+        placeholder="Pergunte sobre sua carteira, gastos, estratégias..."
+        [(ngModel)]="userInput"
+        (keydown)="onKeyDown($event)"
+        [disabled]="insights.loading()"
+      />
+      <button
+        type="button"
+        class="chat-input__send"
+        (click)="send()"
+        [disabled]="insights.loading() || !userInput.trim()"
+        aria-label="Enviar pergunta"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg>
+      </button>
+    </div>
   </div>
 </div>
