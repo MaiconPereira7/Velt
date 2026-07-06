@@ -1,9 +1,6 @@
 {
-  "framework": null,
-  "buildCommand": "cd web && npm install && npx ng build --configuration=production",
-  "outputDirectory": "web/dist/web/browser",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://velt-api.onrender.com/$1" },
+    { "source": "/api/(.*)", "destination": "https://velt-bc7a.onrender.com/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
