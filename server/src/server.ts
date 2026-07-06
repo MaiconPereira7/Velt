@@ -16,7 +16,11 @@ const ALLOWED_ORIGINS = (process.env['CORS_ORIGIN'] ?? 'http://localhost:4200')
   .split(',')
   .map(origin => origin.trim());
 
-app.use(cors({ origin: ALLOWED_ORIGINS }));
+// Se CORS_ORIGIN contiver "*", aceita qualquer origem — senão, só as
+// origens explicitamente listadas.
+const corsOrigin = ALLOWED_ORIGINS.includes('*') ? true : ALLOWED_ORIGINS;
+
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
 app.use('/auth',         authRoutes);
