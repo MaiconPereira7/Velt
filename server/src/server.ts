@@ -9,9 +9,14 @@ import { errorHandler } from './utils/error.middleware';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3333;
-const ALLOWED_ORIGIN = process.env['CORS_ORIGIN'] ?? 'http://localhost:4200';
 
-app.use(cors({ origin: ALLOWED_ORIGIN }));
+// Suporta múltiplas origens separadas por vírgula (ex: domínio do Vercel +
+// localhost em dev) — cada uma vira um item da lista que o cors() aceita.
+const ALLOWED_ORIGINS = (process.env['CORS_ORIGIN'] ?? 'http://localhost:4200')
+  .split(',')
+  .map(origin => origin.trim());
+
+app.use(cors({ origin: ALLOWED_ORIGINS }));
 app.use(express.json());
 
 app.use('/auth',         authRoutes);
