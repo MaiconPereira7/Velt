@@ -14,7 +14,12 @@
   <!-- Hero: patrimônio total em destaque absoluto -->
   <div class="hero-card">
     <div class="hero-card__label">Patrimônio Total</div>
-    <div class="hero-card__value" [class.negative]="netWorth < 0">R$ {{ netWorth | brl }}</div>
+    <div
+      class="hero-card__value"
+      [class.negative]="netWorth < 0"
+      [class.flash-up]="netWorthFlash === 'up'"
+      [class.flash-down]="netWorthFlash === 'down'"
+    >R$ {{ netWorth | brl }}</div>
     <div class="hero-card__breakdown">
       <span>₿ Cripto: R$ {{ crypto.totalCurrent | brl }}</span>
       <span class="hero-card__divider">·</span>
@@ -59,13 +64,19 @@
       <div class="card__label">₿ Bitcoin · BTC/BRL · Ao vivo</div>
 
       @if (crypto.priceLoading()) {
-        <div class="skeleton"></div>
+        <app-skeleton-loader height="44px" width="60%" />
       } @else {
-        <div class="btc-price" [class.btc-price--pulse]="pricePulse">
+        <div class="btc-price">
           <span class="btc-price__currency">R$</span>
-          <span class="btc-price__value">{{ crypto.btcPrice() | brl: 0 }}</span>
+          <span
+            class="btc-price__value"
+            [class.flash-up]="btcFlash === 'up'"
+            [class.flash-down]="btcFlash === 'down'"
+          >{{ crypto.btcPrice() | brl: 0 }}</span>
         </div>
       }
+
+      <app-price-chart class="btc-sparkline" coinId="bitcoin" coinName="Bitcoin" [compact]="true" />
 
       <div class="card__footer">
         Fonte: {{ crypto.isLive() ? 'CoinGecko' : 'Simulado (backend offline)' }} · Atualiza a cada 3s
@@ -75,7 +86,12 @@
     <div class="card">
       <div class="card__label">Distribuição da Carteira</div>
       @if (crypto.assets().length === 0) {
-        <div class="empty-state">Adicione ativos na Carteira para ver a distribuição.</div>
+        <app-empty-state
+          title="Sem ativos ainda"
+          subtitle="Adicione ativos na Carteira para ver a distribuição"
+          ctaLabel="Ir para Carteira"
+          ctaLink="/carteira"
+        />
       } @else {
         <div class="distribution">
           <div class="distribution__bar">
@@ -83,7 +99,7 @@
               <div
                 class="distribution__fill"
                 [style.width.%]="assetPct(asset)"
-                [style.background]="asset.color"
+                [style.background]="coinColor(asset.symbol)"
                 [title]="asset.symbol + ': ' + assetPct(asset).toFixed(1) + '%'"
               ></div>
             }
@@ -91,7 +107,7 @@
           <div class="distribution__legend">
             @for (asset of crypto.assets(); track asset.id) {
               <div class="legend-item">
-                <span class="legend-item__dot" [style.background]="asset.color"></span>
+                <span class="legend-item__dot" [style.background]="coinColor(asset.symbol)"></span>
                 <span>{{ asset.symbol }} {{ assetPct(asset).toFixed(1) }}%</span>
               </div>
             }
@@ -106,9 +122,14 @@
     <div class="card">
       <div class="card__label">Carteira de Ativos</div>
       @if (crypto.assetsLoading()) {
-        <div class="skeleton"></div>
+        <app-skeleton-loader />
       } @else if (crypto.assets().length === 0) {
-        <div class="empty-state">Nenhum ativo ainda — adicione na Carteira.</div>
+        <app-empty-state
+          title="Nenhum ativo ainda"
+          subtitle="Adicione ativos na Carteira para ver aqui"
+          ctaLabel="Ir para Carteira"
+          ctaLink="/carteira"
+        />
       } @else {
         <div class="table-wrap">
         <table class="table">
@@ -124,7 +145,13 @@
               <tr>
                 <td class="table__td">
                   <div class="asset-name">
-                    <span class="asset-name__icon" [style.color]="asset.color">{{ asset.icon }}</span>
+                    <span class="asset-name__icon" [style.color]="asset.color">
+                      @if (isImageIcon(asset.icon)) {
+                        <img [src]="asset.icon" class="asset-name__icon-img" alt="" />
+                      } @else {
+                        {{ asset.icon }}
+                      }
+                    </span>
                     <strong>{{ asset.symbol }}</strong>
                   </div>
                 </td>
@@ -147,9 +174,14 @@
     <div class="card">
       <div class="card__label">Transações Recentes</div>
       @if (finance.transactionsLoading()) {
-        <div class="skeleton"></div>
+        <app-skeleton-loader />
       } @else if (recentTransactions.length === 0) {
-        <div class="empty-state">Nenhuma transação ainda — adicione em Finanças.</div>
+        <app-empty-state
+          title="Nenhuma transação ainda"
+          subtitle="Adicione transações em Finanças para ver aqui"
+          ctaLabel="Ir para Finanças"
+          ctaLink="/financas"
+        />
       } @else {
         <div class="tx-list">
           @for (tx of recentTransactions; track tx.id) {

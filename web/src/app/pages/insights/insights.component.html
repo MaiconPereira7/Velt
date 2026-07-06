@@ -5,7 +5,8 @@
       <p class="page-subtitle">Análises personalizadas baseadas nos seus dados financeiros e de cripto</p>
     </div>
     <div class="ai-badge">
-      <span>✦</span> AI
+      <svg class="ai-badge__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/></svg>
+      AI
     </div>
   </div>
 
@@ -28,7 +29,9 @@
       @for (msg of insights.messages(); track $index) {
         <div class="chat-row" [class.chat-row--user]="msg.role === 'user'">
           @if (msg.role === 'ai') {
-            <div class="chat-avatar">₿</div>
+            <div class="chat-avatar">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/></svg>
+          </div>
           }
           <div
             class="chat-bubble"
@@ -42,7 +45,9 @@
       <!-- Typing indicator -->
       @if (insights.loading() && insights.messages()[insights.messages().length - 1]?.role !== 'ai') {
         <div class="chat-row">
-          <div class="chat-avatar">₿</div>
+          <div class="chat-avatar">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z"/></svg>
+          </div>
           <div class="chat-bubble chat-bubble--ai chat-bubble--typing">
             <span class="dot"></span>
             <span class="dot"></span>

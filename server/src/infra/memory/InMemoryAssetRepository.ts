@@ -21,6 +21,13 @@ export class InMemoryAssetRepository implements AssetRepository {
     return asset;
   }
 
+  async update(id: string, data: Partial<Pick<Asset, 'amount' | 'avgPrice'>>): Promise<Asset> {
+    const asset = this.assets.find(a => a.id === id);
+    if (!asset) throw new Error('Asset not found');
+    Object.assign(asset, data);
+    return asset;
+  }
+
   async delete(id: string): Promise<void> {
     this.assets = this.assets.filter(a => a.id !== id);
   }

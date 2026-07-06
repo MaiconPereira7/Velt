@@ -14,9 +14,28 @@ const COINGECKO_IDS: Record<string, string> = {
 };
 
 const CACHE_TTL_MS = 60_000;
+const CHART_CACHE_TTL_MS = 5 * 60_000; // 5 minutos — histórico varia bem menos que o preço "spot"
+const SEARCH_CACHE_TTL_MS = 10 * 60_000; // 10 minutos — nome/símbolo/ícone de uma moeda não muda
 
 interface CacheEntry {
   value: Record<string, number>;
+  expiresAt: number;
+}
+
+interface ChartCacheEntry {
+  value: [number, number][];
+  expiresAt: number;
+}
+
+export interface CoinSearchResult {
+  id: string;
+  name: string;
+  symbol: string;
+  thumb: string;
+}
+
+interface SearchCacheEntry {
+  value: CoinSearchResult[];
   expiresAt: number;
 }
 
@@ -32,6 +51,9 @@ interface CacheEntry {
  */
 export class PriceService {
   private cache = new Map<string, CacheEntry>();
+  private idCache = new Map<string, CacheEntry>();
+  private chartCache = new Map<string, ChartCacheEntry>();
+  private searchCache = new Map<string, SearchCacheEntry>();
 
   async getPrices(symbols: string[]): Promise<Record<string, number>> {
     const uniqueSymbols = [...new Set(symbols)].filter(s => COINGECKO_IDS[s]);
@@ -62,6 +84,94 @@ export class PriceService {
       // CoinGecko fora do ar ou rate-limited: devolve o último cache válido (mesmo
       // expirado) em vez de derrubar a tela do usuário com preço zerado.
       return cached?.value ?? {};
+    }
+  }
+
+  // Mesma ideia do getPrices, mas por id da CoinGecko em vez de símbolo — usado
+  // pra ativos cadastrados via busca/autocomplete, que não estão no mapa fixo
+  // COINGECKO_IDS (podem ser qualquer moeda listada na CoinGecko).
+  async getPricesByIds(coinIds: string[]): Promise<Record<string, number>> {
+    const uniqueIds = [...new Set(coinIds)].filter(Boolean);
+    if (uniqueIds.length === 0) return {};
+
+    const cacheKey = uniqueIds.slice().sort().join(',');
+    const cached = this.idCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value;
+    }
+
+    try {
+      const { data } = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+        params: { ids: uniqueIds.join(','), vs_currencies: 'brl' },
+        timeout: 5000,
+      });
+
+      const result: Record<string, number> = {};
+      for (const id of uniqueIds) {
+        if (data[id]?.brl) result[id] = data[id].brl;
+      }
+
+      this.idCache.set(cacheKey, { value: result, expiresAt: Date.now() + CACHE_TTL_MS });
+      return result;
+    } catch {
+      return cached?.value ?? {};
+    }
+  }
+
+  // Busca de moedas (autocomplete do formulário "Adicionar Ativo"). Cache mais
+  // longo que o de preço: nome/símbolo/ícone de uma moeda praticamente não muda.
+  async searchCoins(query: string): Promise<CoinSearchResult[]> {
+    const key = query.trim().toLowerCase();
+    if (!key) return [];
+
+    const cached = this.searchCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value;
+    }
+
+    try {
+      const { data } = await axios.get('https://api.coingecko.com/api/v3/search', {
+        params: { query: key },
+        timeout: 5000,
+      });
+
+      const results: CoinSearchResult[] = (data.coins ?? [])
+        .slice(0, 10)
+        .map((c: { id: string; name: string; symbol: string; thumb: string }) => ({
+          id: c.id,
+          name: c.name,
+          symbol: c.symbol,
+          thumb: c.thumb,
+        }));
+
+      this.searchCache.set(key, { value: results, expiresAt: Date.now() + SEARCH_CACHE_TTL_MS });
+      return results;
+    } catch {
+      return cached?.value ?? [];
+    }
+  }
+
+  // Histórico de preço pra alimentar o gráfico de linha (Carteira/Dashboard).
+  // Mesmo padrão de cache do getPrices: evita bater na CoinGecko a cada clique
+  // de período, e devolve o último cache válido se a API estiver fora do ar.
+  async getMarketChart(coinId: string, days: number): Promise<[number, number][]> {
+    const cacheKey = `${coinId}:${days}`;
+    const cached = this.chartCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value;
+    }
+
+    try {
+      const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`, {
+        params: { vs_currency: 'brl', days },
+        timeout: 8000,
+      });
+
+      const prices: [number, number][] = data.prices ?? [];
+      this.chartCache.set(cacheKey, { value: prices, expiresAt: Date.now() + CHART_CACHE_TTL_MS });
+      return prices;
+    } catch {
+      return cached?.value ?? [];
     }
   }
 

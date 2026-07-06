@@ -1,0 +1,103 @@
+.price-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price-chart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.price-chart__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.price-chart__periods {
+  display: flex;
+  gap: 6px;
+}
+
+.period-btn {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #8b8fa8;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { color: #f0f2f7; }
+
+  &--active {
+    background: #f7931a;
+    color: #0a0b0f;
+    border-color: #f7931a;
+  }
+}
+
+.price-chart__canvas-wrap {
+  position: relative;
+  height: 220px;
+}
+
+.price-chart--compact .price-chart__canvas-wrap {
+  height: 64px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.price-chart__skeleton {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  animation: shimmer 1.5s infinite;
+}
+
+.price-chart__error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.price-chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: #1a1b22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.price-chart__tooltip-date {
+  color: #8b8fa8;
+  margin-bottom: 2px;
+}
+
+.price-chart__tooltip-price {
+  color: #f0f2f7;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}

@@ -8,9 +8,11 @@ import { RegisterUserUseCase } from './useCases/auth/RegisterUserUseCase';
 import { LoginUserUseCase } from './useCases/auth/LoginUserUseCase';
 import { GetAssetsUseCase } from './useCases/crypto/GetAssetsUseCase';
 import { AddAssetUseCase } from './useCases/crypto/AddAssetUseCase';
+import { UpdateAssetUseCase } from './useCases/crypto/UpdateAssetUseCase';
 import { RemoveAssetUseCase } from './useCases/crypto/RemoveAssetUseCase';
 import { GetTransactionsUseCase } from './useCases/finance/GetTransactionsUseCase';
 import { AddTransactionUseCase } from './useCases/finance/AddTransactionUseCase';
+import { UpdateTransactionUseCase } from './useCases/finance/UpdateTransactionUseCase';
 import { RemoveTransactionUseCase } from './useCases/finance/RemoveTransactionUseCase';
 import { GetInsightsUseCase } from './useCases/insights/GetInsightsUseCase';
 
@@ -37,10 +39,12 @@ export const container = {
 
   getAssets: new GetAssetsUseCase(assetRepository, priceService),
   addAsset: new AddAssetUseCase(assetRepository),
+  updateAsset: new UpdateAssetUseCase(assetRepository),
   removeAsset: new RemoveAssetUseCase(assetRepository),
 
   getTransactions: new GetTransactionsUseCase(transactionRepository),
   addTransaction: new AddTransactionUseCase(transactionRepository),
+  updateTransaction: new UpdateTransactionUseCase(transactionRepository),
   removeTransaction: new RemoveTransactionUseCase(transactionRepository),
 
   getInsights: new GetInsightsUseCase(assetRepository, transactionRepository, priceService, insightsService),

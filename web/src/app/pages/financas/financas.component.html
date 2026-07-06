@@ -4,7 +4,7 @@
       <h1 class="page-title">Finanças Pessoais</h1>
       <p class="page-subtitle">Controle de entradas e saídas • {{ monthLabel }}</p>
     </div>
-    <button class="btn btn--primary" (click)="showForm.set(!showForm())">+ Nova Transação</button>
+    <button class="btn btn--primary" (click)="toggleAddForm()">+ Nova Transação</button>
   </div>
 
   <!-- Resumo -->
@@ -28,11 +28,11 @@
   <!-- Formulário -->
   @if (showForm()) {
     <div class="card card--form">
-      <div class="card__label">Nova Transação</div>
+      <div class="card__label">{{ editingId() ? 'Editar Transação' : 'Nova Transação' }}</div>
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label">Tipo</label>
-          <select class="form-input" [(ngModel)]="form.type">
+          <select class="form-input" [(ngModel)]="form.type" [disabled]="!!editingId()">
             <option value="entrada">Entrada</option>
             <option value="saida">Saída</option>
           </select>
@@ -69,8 +69,8 @@
         <div class="form-error">{{ formError() }}</div>
       }
       <div class="form-actions">
-        <button class="btn btn--primary" (click)="addTransaction()">Salvar</button>
-        <button class="btn btn--secondary" (click)="showForm.set(false)">Cancelar</button>
+        <button class="btn btn--primary" (click)="saveTransaction()">{{ editingId() ? 'Salvar Alterações' : 'Salvar' }}</button>
+        <button class="btn btn--secondary" (click)="showForm.set(false); editingId.set(null)">Cancelar</button>
       </div>
     </div>
   }
@@ -88,11 +88,16 @@
       </div>
 
       @if (finance.transactionsLoading()) {
-        <div class="skeleton" style="margin-top:16px"></div>
+        <app-skeleton-loader height="200px" />
       } @else if (finance.transactionsError()) {
         <div class="form-error" style="margin-top:16px">{{ finance.transactionsError() }}</div>
       } @else if (filtered.length === 0) {
-        <div class="empty-state" style="margin-top:16px">Nenhuma transação encontrada.</div>
+        <app-empty-state
+          title="Nenhuma transação encontrada"
+          subtitle="Clique em + Nova Transação para começar"
+          ctaLabel="+ Nova Transação"
+          (cta)="startAdd()"
+        />
       } @else {
         <div class="table-wrap" style="margin-top:16px">
         <table class="table">
@@ -118,8 +123,9 @@
                     [class.negative]="tx.type === 'saida'">
                   {{ tx.type === 'entrada' ? '+' : '-' }}R$ {{ tx.amount | brl }}
                 </td>
-                <td class="table__td">
-                  <button class="btn-remove" (click)="removeTransaction(tx.id)">✕</button>
+                <td class="table__td table__td--actions">
+                  <button class="btn-edit" (click)="startEdit(tx)" title="Editar">✎</button>
+                  <button class="btn-remove" (click)="removeTransaction(tx.id)" title="Remover">✕</button>
                 </td>
               </tr>
             }

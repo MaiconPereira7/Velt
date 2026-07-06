@@ -29,6 +29,12 @@ export class FirestoreTransactionRepository implements TransactionRepository {
     return { id: docRef.id, ...data, createdAt };
   }
 
+  async update(id: string, data: Partial<Pick<Transaction, 'description' | 'category' | 'amount' | 'date'>>): Promise<Transaction> {
+    await this.collection.doc(id).update({ ...data });
+    const updated = await this.findById(id);
+    return updated!;
+  }
+
   async delete(id: string): Promise<void> {
     await this.collection.doc(id).delete();
   }

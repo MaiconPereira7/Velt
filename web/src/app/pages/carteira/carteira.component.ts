@@ -2,8 +2,13 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CryptoService } from '../../core/services/crypto.service';
-import { CryptoAsset } from '../../core/models';
+import { CoinSearchResult, CryptoAsset } from '../../core/models';
 import { BrlPipe, PctPipe } from '../../shared/pipes/format.pipes';
+import { PriceChartComponent } from '../../shared/components/price-chart/price-chart.component';
+import { COINGECKO_IDS } from '../../core/config/coingecko';
+import { coinColor } from '../../core/config/coin-colors';
+import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 const COIN_PRESETS: { coin: string; symbol: string; icon: string; color: string }[] = [
   { coin: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a' },
@@ -19,7 +24,7 @@ const COIN_PRESETS: { coin: string; symbol: string; icon: string; color: string 
 @Component({
   selector: 'app-carteira',
   standalone: true,
-  imports: [CommonModule, FormsModule, BrlPipe, PctPipe],
+  imports: [CommonModule, FormsModule, BrlPipe, PctPipe, PriceChartComponent, SkeletonLoaderComponent, EmptyStateComponent],
   templateUrl: './carteira.component.html',
   styleUrls: ['./carteira.component.scss'],
 })
@@ -29,9 +34,25 @@ export class CarteiraComponent implements OnInit {
   showForm = signal(false);
   formError = signal('');
 
+  // Ativo selecionado na tabela — clicar de novo no mesmo ativo fecha o painel do gráfico.
+  selectedAssetId = signal<string | null>(null);
+
+  // Id do ativo em edição. Quando preenchido, o formulário vira "Editar Ativo":
+  // a moeda fica travada (o PUT só aceita amount/avgPrice) e só quantidade/preço
+  // médio ficam editáveis.
+  editingId = signal<string | null>(null);
+
   coinPresets = COIN_PRESETS;
   selectedPreset = COIN_PRESETS[0].symbol;
   customCoin = false;
+
+  // Autocomplete de busca (CoinGecko), usado quando "Outra (personalizada)" é
+  // escolhida no lugar dos antigos inputs manuais de Nome/Símbolo.
+  searchQuery = signal('');
+  searchResults = signal<CoinSearchResult[]>([]);
+  searching = signal(false);
+  showDropdown = signal(false);
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
   // currentPrice não é mais preenchido no formulário: o backend calcula a
   // cotação ao vivo (CoinGecko + cache) no momento da leitura.
@@ -51,6 +72,9 @@ export class CarteiraComponent implements OnInit {
       this.form.symbol = '';
       this.form.icon = '?';
       this.form.color = '#8b8fa8';
+      this.form.coinId = undefined;
+      this.searchQuery.set('');
+      this.searchResults.set([]);
       return;
     }
     this.customCoin = false;
@@ -64,6 +88,51 @@ export class CarteiraComponent implements OnInit {
     this.form.symbol = preset.symbol;
     this.form.icon = preset.icon;
     this.form.color = preset.color;
+    this.form.coinId = COINGECKO_IDS[preset.symbol];
+  }
+
+  // Debounce de 300ms: só busca na CoinGecko depois que o usuário para de digitar.
+  onSearchInput(value: string): void {
+    this.searchQuery.set(value);
+    this.form.coin = '';
+    this.form.symbol = '';
+    this.form.coinId = undefined;
+    clearTimeout(this.searchTimer);
+
+    if (!value.trim()) {
+      this.searchResults.set([]);
+      this.showDropdown.set(false);
+      return;
+    }
+    this.searchTimer = setTimeout(() => this.runSearch(value), 300);
+  }
+
+  private async runSearch(query: string): Promise<void> {
+    this.searching.set(true);
+    try {
+      this.searchResults.set(await this.crypto.searchCoins(query));
+    } catch {
+      this.searchResults.set([]);
+    } finally {
+      this.searching.set(false);
+      this.showDropdown.set(true);
+    }
+  }
+
+  selectCoin(result: CoinSearchResult): void {
+    this.form.coin = result.name;
+    this.form.symbol = result.symbol.toUpperCase();
+    this.form.icon = result.thumb;
+    this.form.color = '#8b8fa8';
+    this.form.coinId = result.id;
+    this.searchQuery.set(`${result.name} (${result.symbol.toUpperCase()})`);
+    this.showDropdown.set(false);
+    this.searchResults.set([]);
+  }
+
+  // Delay pra deixar o (click) do dropdown disparar antes do blur escondê-lo.
+  onSearchBlur(): void {
+    setTimeout(() => this.showDropdown.set(false), 150);
   }
 
   pnlPct(asset: CryptoAsset): number {
@@ -80,16 +149,82 @@ export class CarteiraComponent implements OnInit {
       : 0;
   }
 
-  async addAsset(): Promise<void> {
-    if (!this.form.coin || !this.form.amount || !this.form.avgPrice) return;
+  toggleAssetChart(asset: CryptoAsset): void {
+    this.selectedAssetId.update(id => (id === asset.id ? null : asset.id));
+  }
+
+  get selectedAsset(): CryptoAsset | undefined {
+    return this.crypto.assets().find(a => a.id === this.selectedAssetId());
+  }
+
+  coingeckoId(asset: CryptoAsset): string | undefined {
+    return asset.coinId ?? COINGECKO_IDS[asset.symbol];
+  }
+
+  isImageIcon(icon: string): boolean {
+    return icon.startsWith('http');
+  }
+
+  // Cor fixa por símbolo pra distribuição — exposta como propriedade pra poder
+  // ser chamada direto no template (métodos importados de módulo não são
+  // resolvidos como funções de template do Angular).
+  coinColor = coinColor;
+
+  toggleAddForm(): void {
+    if (this.showForm()) {
+      this.showForm.set(false);
+      return;
+    }
+    this.startAdd();
+  }
+
+  startAdd(): void {
+    this.editingId.set(null);
+    this.resetForm();
     this.formError.set('');
+    this.showForm.set(true);
+  }
+
+  startEdit(asset: CryptoAsset): void {
+    this.editingId.set(asset.id);
+    this.form = {
+      coin: asset.coin, symbol: asset.symbol, coinId: asset.coinId,
+      amount: asset.amount, avgPrice: asset.avgPrice, icon: asset.icon, color: asset.color,
+    };
+    this.formError.set('');
+    this.showForm.set(true);
+  }
+
+  private resetForm(): void {
+    this.customCoin = false;
+    this.selectedPreset = COIN_PRESETS[0].symbol;
+    this.form = { coin: '', symbol: '', amount: 0, avgPrice: 0, icon: '◎', color: '#ffffff' };
+    this.applyPreset(this.selectedPreset);
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+  }
+
+  async saveAsset(): Promise<void> {
+    this.formError.set('');
+    const editId = this.editingId();
+
+    if (editId) {
+      if (!this.form.amount || !this.form.avgPrice) return;
+      try {
+        await this.crypto.updateAsset(editId, { amount: this.form.amount, avgPrice: this.form.avgPrice });
+        this.showForm.set(false);
+        this.editingId.set(null);
+      } catch {
+        this.formError.set('Não foi possível salvar as alterações. Tente novamente.');
+      }
+      return;
+    }
+
+    if (!this.form.coin || !this.form.amount || !this.form.avgPrice) return;
     try {
       await this.crypto.addAsset({ ...this.form });
       this.showForm.set(false);
-      this.form = { coin: '', symbol: '', amount: 0, avgPrice: 0, icon: '◎', color: '#ffffff' };
-      this.customCoin = false;
-      this.selectedPreset = COIN_PRESETS[0].symbol;
-      this.applyPreset(this.selectedPreset);
+      this.resetForm();
     } catch {
       this.formError.set('Não foi possível salvar o ativo. Tente novamente.');
     }
@@ -99,6 +234,11 @@ export class CarteiraComponent implements OnInit {
     if (!confirm('Remover este ativo?')) return;
     try {
       await this.crypto.removeAsset(id);
+      if (this.selectedAssetId() === id) this.selectedAssetId.set(null);
+      if (this.editingId() === id) {
+        this.editingId.set(null);
+        this.showForm.set(false);
+      }
     } catch {
       this.formError.set('Não foi possível remover o ativo. Tente novamente.');
     }

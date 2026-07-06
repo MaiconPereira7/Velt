@@ -17,6 +17,14 @@ export async function createTransaction(req: Request, res: Response, next: NextF
   }
 }
 
+export async function updateTransaction(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await container.updateTransaction.execute(req.user!.userId, req.params['id']!, req.body));
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function deleteTransaction(req: Request, res: Response, next: NextFunction) {
   try {
     await container.removeTransaction.execute(req.user!.userId, req.params['id']!);

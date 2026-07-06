@@ -5,6 +5,7 @@ export interface AssetWithQuote {
   id: string;
   coin: string;
   symbol: string;
+  coinId?: string;
   amount: number;
   avgPrice: number;
   currentPrice: number;
@@ -26,16 +27,25 @@ export class GetAssetsUseCase {
     const userAssets = await this.assets.findAllByUser(userId);
     if (userAssets.length === 0) return [];
 
-    const symbols = userAssets.map(a => a.symbol);
-    const quotes = await this.prices.getPrices(symbols);
+    // Ativos com coinId (cadastrados via busca) cotam por id da CoinGecko —
+    // funciona pra qualquer moeda. Ativos antigos, sem coinId, caem no mapa
+    // fixo symbol -> id (só cobre os presets originais).
+    const withCoinId = userAssets.filter(a => a.coinId);
+    const legacy = userAssets.filter(a => !a.coinId);
+
+    const [idQuotes, symbolQuotes] = await Promise.all([
+      this.prices.getPricesByIds(withCoinId.map(a => a.coinId!)),
+      this.prices.getPrices(legacy.map(a => a.symbol)),
+    ]);
 
     return userAssets.map(a => ({
       id: a.id,
       coin: a.coin,
       symbol: a.symbol,
+      coinId: a.coinId,
       amount: a.amount,
       avgPrice: a.avgPrice,
-      currentPrice: quotes[a.symbol] ?? a.avgPrice,
+      currentPrice: (a.coinId ? idQuotes[a.coinId] : symbolQuotes[a.symbol]) ?? a.avgPrice,
       icon: a.icon,
       color: a.color,
     }));

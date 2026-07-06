@@ -4,6 +4,7 @@ import { AppError } from '../../utils/error.middleware';
 export interface AddAssetInput {
   coin: string;
   symbol: string;
+  coinId?: string;
   amount: number;
   avgPrice: number;
   icon: string;
@@ -25,6 +26,9 @@ export class AddAssetUseCase {
       avgPrice: input.avgPrice,
       icon: input.icon || '◎',
       color: input.color || '#8b8fa8',
+      // Spread condicional: se coinId não vier, a chave nem existe no objeto —
+      // o Firestore Admin SDK rejeita campos com valor `undefined` explícito.
+      ...(input.coinId ? { coinId: input.coinId } : {}),
     });
   }
 }

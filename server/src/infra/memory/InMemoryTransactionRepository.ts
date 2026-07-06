@@ -21,6 +21,13 @@ export class InMemoryTransactionRepository implements TransactionRepository {
     return transaction;
   }
 
+  async update(id: string, data: Partial<Pick<Transaction, 'description' | 'category' | 'amount' | 'date'>>): Promise<Transaction> {
+    const transaction = this.transactions.find(t => t.id === id);
+    if (!transaction) throw new Error('Transaction not found');
+    Object.assign(transaction, data);
+    return transaction;
+  }
+
   async delete(id: string): Promise<void> {
     this.transactions = this.transactions.filter(t => t.id !== id);
   }

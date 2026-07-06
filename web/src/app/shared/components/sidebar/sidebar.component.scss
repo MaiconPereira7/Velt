@@ -19,8 +19,10 @@
     gap: 10px;
 
     .logo-icon {
-      font-size: 22px;
+      display: flex;
       filter: drop-shadow(0 0 10px #f7931a);
+
+      svg { display: block; }
     }
 
     .logo-text {

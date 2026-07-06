@@ -1,0 +1,40 @@
+<div class="price-chart" [class.price-chart--compact]="compact">
+  @if (!compact) {
+    <div class="price-chart__header">
+      <div class="price-chart__title">{{ coinName }}</div>
+      <div class="price-chart__periods">
+        @for (period of periods; track period.days) {
+          <button
+            class="period-btn"
+            [class.period-btn--active]="selectedDays === period.days"
+            (click)="selectPeriod(period.days)"
+          >{{ period.label }}</button>
+        }
+      </div>
+    </div>
+  }
+
+  <div
+    class="price-chart__canvas-wrap"
+    #wrapper
+    (mousemove)="onMouseMove($event)"
+    (mouseleave)="onMouseLeave()"
+  >
+    <canvas #canvas></canvas>
+
+    @if (loading) {
+      <div class="price-chart__skeleton"></div>
+    } @else if (error) {
+      <div class="price-chart__error">{{ error }}</div>
+    } @else if (points.length === 0) {
+      <div class="price-chart__error">Sem histórico disponível.</div>
+    }
+
+    @if (tooltip; as tip) {
+      <div class="price-chart__tooltip" [style.left.px]="hoverX" [style.top.px]="hoverY">
+        <div class="price-chart__tooltip-date">{{ tip.date }}</div>
+        <div class="price-chart__tooltip-price">{{ tip.price }}</div>
+      </div>
+    }
+  </div>
+</div>

@@ -15,6 +15,11 @@ export interface Asset {
   userId: string;
   coin: string;
   symbol: string;
+  // Id da moeda na CoinGecko (ex: "bitcoin"). Opcional: ativos antigos, criados
+  // antes da busca por autocomplete, não têm esse campo e caem no mapa fixo
+  // symbol -> id em PriceService. Com ele, qualquer moeda buscada (não só as
+  // 8 do preset) tem cotação ao vivo e gráfico de preço corretos.
+  coinId?: string;
   amount: number;
   avgPrice: number;
   icon: string;

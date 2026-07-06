@@ -64,4 +64,9 @@ export class FinanceService {
     await firstValueFrom(this.http.delete(`${API_BASE_URL}/transactions/${id}`));
     this._transactions.update(list => list.filter(t => t.id !== id));
   }
+
+  async updateTransaction(id: string, data: Partial<Pick<Transaction, 'description' | 'category' | 'amount' | 'date'>>): Promise<void> {
+    const updated = await firstValueFrom(this.http.put<Transaction>(`${API_BASE_URL}/transactions/${id}`, data));
+    this._transactions.update(list => list.map(t => (t.id === id ? updated : t)));
+  }
 }

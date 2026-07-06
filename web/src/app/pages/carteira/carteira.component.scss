@@ -10,9 +10,99 @@
   align-items: center;
   gap: 10px;
 
-  &__icon { font-size: 20px; }
+  &__icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+  }
+  &__icon-img { width: 20px; height: 20px; border-radius: 50%; display: block; }
   &__name { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
   &__sym  { font-size: 12px; color: #4a4e65; }
+}
+
+.form-static {
+  padding: 13px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.coin-search {
+  position: relative;
+}
+
+.coin-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #1a1b22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+}
+
+.coin-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(255, 255, 255, 0.06); }
+
+  &--empty {
+    color: #8b8fa8;
+    cursor: default;
+    &:hover { background: transparent; }
+  }
+
+  &__thumb { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+  &__name { flex: 1; }
+  &__symbol { color: #4a4e65; font-size: 12px; }
+}
+
+.asset-row {
+  cursor: pointer;
+
+  &--active {
+    background: rgba(247, 147, 26, 0.05);
+  }
+}
+
+.asset-chart-panel {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(247, 147, 26, 0.15);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b8fa8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 }
 
 .distribution {

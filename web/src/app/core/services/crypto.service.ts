@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal, inject } from '@angular/core';
 import { catchError, firstValueFrom, of } from 'rxjs';
-import { BitcoinPrice, CryptoAsset } from '../models';
+import { BitcoinPrice, CoinSearchResult, CryptoAsset } from '../models';
 import { API_BASE_URL } from '../config/api.config';
 
 @Injectable({ providedIn: 'root' })
@@ -66,9 +66,28 @@ export class CryptoService {
     this.loadAssets();
   }
 
+  async updateAsset(id: string, data: { amount?: number; avgPrice?: number }): Promise<void> {
+    await firstValueFrom(this.http.put(`${API_BASE_URL}/crypto/assets/${id}`, data));
+    this.loadAssets();
+  }
+
   async removeAsset(id: string): Promise<void> {
     await firstValueFrom(this.http.delete(`${API_BASE_URL}/crypto/assets/${id}`));
     this._assets.update(list => list.filter(a => a.id !== id));
+  }
+
+  // Histórico de preço (pra alimentar o price-chart) — cada item é [timestamp, preço].
+  getPriceHistory(coinId: string, days: number): Promise<[number, number][]> {
+    return firstValueFrom(
+      this.http.get<[number, number][]>(`${API_BASE_URL}/crypto/price-history/${coinId}`, { params: { days } }),
+    );
+  }
+
+  // Autocomplete do formulário "Adicionar Ativo" — busca por nome/símbolo na CoinGecko.
+  searchCoins(query: string): Promise<CoinSearchResult[]> {
+    return firstValueFrom(
+      this.http.get<CoinSearchResult[]>(`${API_BASE_URL}/crypto/search`, { params: { q: query } }),
+    );
   }
 
   get totalInvested(): number {

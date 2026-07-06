@@ -31,6 +31,12 @@ export class FirestoreAssetRepository implements AssetRepository {
     return { id: docRef.id, ...data, createdAt };
   }
 
+  async update(id: string, data: Partial<Pick<Asset, 'amount' | 'avgPrice'>>): Promise<Asset> {
+    await this.collection.doc(id).update({ ...data });
+    const updated = await this.findById(id);
+    return updated!;
+  }
+
   async delete(id: string): Promise<void> {
     await this.collection.doc(id).delete();
   }
@@ -42,6 +48,7 @@ export class FirestoreAssetRepository implements AssetRepository {
       userId: data['userId'],
       coin: data['coin'],
       symbol: data['symbol'],
+      coinId: data['coinId'],
       amount: data['amount'],
       avgPrice: data['avgPrice'],
       icon: data['icon'],

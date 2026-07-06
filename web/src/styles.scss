@@ -58,7 +58,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity
   border-radius: 16px; padding: 24px; overflow: hidden;
   box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -12px rgba(0,0,0,0.35);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  animation: cardIn 0.35s ease both;
+  animation: fadeInUp 0.3s ease-out both;
 
   &:hover {
     border-color: rgba(255,255,255,0.14);
@@ -73,10 +73,17 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity
   &__footer { font-size: 13px; color: var(--color-text-secondary); margin-top: 8px; }
 }
 
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(8px); }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+// Efeito cascata: cards dentro de um grid entram em sequência em vez de todos
+// de uma vez — só os 4 primeiros de cada grid, o suficiente pro olho perceber.
+.grid > .card:nth-child(1) { animation-delay: 0s; }
+.grid > .card:nth-child(2) { animation-delay: 0.05s; }
+.grid > .card:nth-child(3) { animation-delay: 0.1s; }
+.grid > .card:nth-child(4) { animation-delay: 0.15s; }
 
 .metric {
   font-size: 26px; font-weight: 700; font-family: var(--font-mono);
@@ -114,6 +121,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity
 .skeleton { height: 52px; width: 70%; background: rgba(255,255,255,0.05); border-radius: 10px; animation: shimmer 1.5s infinite; }
 @keyframes shimmer { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
+// Flash de 0.5s quando um valor muda — verde se subiu, vermelho se caiu
+// (preço do BTC ao vivo, patrimônio total). A cor "pisca" e volta sozinha
+// pro estado normal porque a keyframe termina em `color: inherit`.
+.flash-up   { animation: flashUp 0.5s ease; }
+.flash-down { animation: flashDown 0.5s ease; }
+@keyframes flashUp   { 0% { color: var(--color-positive); } 100% { color: inherit; } }
+@keyframes flashDown { 0% { color: var(--color-negative); } 100% { color: inherit; } }
+
 .empty-state { padding: 32px 0; text-align: center; font-size: 14px; color: var(--color-text-secondary); }
 .form-hint { font-size: 12px; color: var(--color-text-secondary); margin: -4px 0 12px; }
 
@@ -123,6 +138,15 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity
   transition: background 0.15s, color 0.15s;
   &:hover { background: rgba(255,95,109,0.1); color: var(--color-negative); }
 }
+
+.btn-edit {
+  background: transparent; border: none; color: var(--color-text-muted);
+  cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(247,147,26,0.12); color: var(--color-btc); }
+}
+
+.table__td--actions { display: flex; gap: 2px; }
 
 .btn {
   padding: 10px 20px; border-radius: 10px; border: none;

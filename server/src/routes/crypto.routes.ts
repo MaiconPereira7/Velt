@@ -1,11 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware } from '../utils/auth.middleware';
-import { getBitcoin, getAssets, createAsset, deleteAsset } from '../controllers/crypto.controller';
+import { getBitcoin, getAssets, createAsset, updateAsset, deleteAsset, getPriceHistory, searchCoins } from '../controllers/crypto.controller';
 import { validate } from '../utils/validate';
-import { addAssetSchema } from '../validators/crypto.schema';
+import { addAssetSchema, updateAssetSchema } from '../validators/crypto.schema';
 const router = Router();
 router.get('/bitcoin', getBitcoin);
+router.get('/search', searchCoins);
+router.get('/price-history/:coinId', getPriceHistory);
 router.get('/assets',        authMiddleware, getAssets);
 router.post('/assets',       authMiddleware, validate(addAssetSchema), createAsset);
+router.put('/assets/:id',    authMiddleware, validate(updateAssetSchema), updateAsset);
 router.delete('/assets/:id', authMiddleware, deleteAsset);
 export default router;

@@ -13,11 +13,19 @@ export interface CryptoAsset {
   id: string;
   coin: string;
   symbol: string;
+  coinId?: string;
   amount: number;
   avgPrice: number;
   currentPrice: number;
   icon: string;
   color: string;
+}
+
+export interface CoinSearchResult {
+  id: string;
+  name: string;
+  symbol: string;
+  thumb: string;
 }
 
 export interface Transaction {

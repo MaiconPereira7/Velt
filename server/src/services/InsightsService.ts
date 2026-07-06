@@ -74,7 +74,7 @@ export class DeterministicInsightsProvider implements AiProvider {
     }
 
     return {
-      title: '📊 Diversificação da Carteira',
+      title: 'Diversificação da Carteira',
       body: `Você tem ${assets.length} ativo(s) somando R$ ${brl(total)}. ${recommendation}`,
     };
   }
@@ -89,7 +89,7 @@ export class DeterministicInsightsProvider implements AiProvider {
     else if (savingsRate < 0) assessment = 'Atenção: suas despesas superaram as receitas neste período.';
 
     return {
-      title: '💰 Gastos e Economia',
+      title: 'Gastos e Economia',
       body: `Receita: R$ ${brl(income)} · Despesas: R$ ${brl(expense)} · Taxa de poupança: ${savingsRate.toFixed(1)}%. ${assessment}`,
     };
   }
@@ -101,7 +101,7 @@ export class DeterministicInsightsProvider implements AiProvider {
 
     if (withPnl.length === 0) {
       return {
-        title: '⚡ Alertas de Volatilidade',
+        title: 'Alertas de Volatilidade',
         body: 'Ainda não tenho cotação ao vivo suficiente para avaliar a volatilidade dos seus ativos.',
       };
     }
@@ -110,7 +110,7 @@ export class DeterministicInsightsProvider implements AiProvider {
     const direction = biggestMove.pnlPct >= 0 ? 'valorização' : 'queda';
 
     return {
-      title: '⚡ Alertas de Volatilidade',
+      title: 'Alertas de Volatilidade',
       body: `${biggestMove.symbol} é o ativo com maior variação da carteira: ${direction} de ${Math.abs(biggestMove.pnlPct).toFixed(1)}% frente ao seu preço médio.`,
     };
   }

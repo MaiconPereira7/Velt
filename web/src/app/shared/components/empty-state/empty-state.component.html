@@ -1,0 +1,19 @@
+<div class="empty-state-v2">
+  <svg class="empty-state-v2__logo" viewBox="0 0 32 32" fill="none">
+    <path d="M6 8 L16 26 L26 8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="empty-state-v2__content">
+    <p class="empty-state-v2__title">{{ title }}</p>
+    @if (subtitle) {
+      <p class="empty-state-v2__subtitle">{{ subtitle }}</p>
+    }
+    @if (ctaLabel) {
+      @if (ctaLink) {
+        <a [routerLink]="ctaLink" class="btn btn--primary empty-state-v2__cta">{{ ctaLabel }}</a>
+      } @else {
+        <button type="button" class="btn btn--primary empty-state-v2__cta" (click)="cta.emit()">{{ ctaLabel }}</button>
+      }
+    }
+  </div>
+</div>
